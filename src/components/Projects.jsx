@@ -1,46 +1,60 @@
 import { useRef, useState } from "react";
 
-// Screenshots are in the public folder. File names must match exactly.
+// images: the screenshot is tried in this order. The first one that loads is used.
 const projects = [
   {
     title: "Nawab's Table",
     type: "Full Stack",
     category: "fullstack",
     desc: "A full stack website for a restaurant, covering the menu, ordering and online presence. Deployed and live.",
+    highlights: [
+      "Shows a live open or closed status on the homepage",
+      "Dedicated menu page for browsing dishes",
+    ],
     tags: ["React", "Node.js", "Database"],
     live: "https://nawabs-table.vercel.app",
     github: "https://github.com/AF-Codes123/nawabs-table",
-    image: "/nawab.PNG",
+    images: ["/nawab.webp", "/nawab.PNG", "/nawab.png"],
   },
   {
     title: "Showroom Website",
     type: "Full Stack",
     category: "fullstack",
     desc: "A professional full stack website for a showroom that presents its products clearly and attractively.",
+    highlights: [
+      "Premium, image-led design for a luxury car showroom",
+    ],
     tags: ["React", "Node.js", "Responsive"],
     live: "https://velocity-motors-three.vercel.app",
     github: "https://github.com/AF-Codes123/velocity-motors",
-    image: "/showroom.PNG",
+    images: ["/showroom.webp", "/showroom.PNG", "/showroom.png"],
   },
   {
     title: "Job Scam Detector",
     type: "Machine Learning",
     category: "ai",
     desc: "An ML model that spots fake job postings so people can avoid scams, with an OCR feature that reads postings from images. Deployed and live.",
+    highlights: [
+      "Check a job by pasting the text or uploading a screenshot",
+      "OCR reads the posting from the image automatically",
+    ],
     tags: ["Python", "scikit-learn", "NLP", "OCR"],
     live: "https://job-scam-detector-with-ocr-feature-mpjfyd4uj5iukvlniotfts.streamlit.app/",
     github: "https://github.com/AF-Codes123/Job-Scam-Detector-With-OCR-Feature",
-    image: "/scam.PNG",
+    images: ["/scam.webp", "/scam.PNG", "/scam.png"],
   },
   {
     title: "AI Smart Study Chatbot",
     type: "AI + Web",
     category: "ai",
     desc: "A smart chatbot that helps students study, delivered as a deployed web app.",
+    highlights: [
+      "Login system so each student has their own account",
+    ],
     tags: ["Python", "LLM", "Web App"],
     live: "https://smart-ai-study-assistant.onrender.com",
     github: "https://github.com/AF-Codes123/smart-ai-study-assistant",
-    image: "/study.PNG",
+    images: ["/study.webp", "/study.PNG", "/study.png"],
   },
 ];
 
@@ -53,7 +67,17 @@ const filters = [
 // Browser-window preview with a gentle tilt on mouse move
 function BrowserPreview({ project }) {
   const ref = useRef(null);
+  const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(false);
+
+  const sources = project.images || [];
+  const src = sources[index];
+
+  // If this file is missing, try the next name; if none work, show the letter
+  const handleError = () => {
+    if (index < sources.length - 1) setIndex(index + 1);
+    else setFailed(true);
+  };
 
   const handleMove = (e) => {
     const r = ref.current.getBoundingClientRect();
@@ -82,12 +106,13 @@ function BrowserPreview({ project }) {
           <span>{address}</span>
         </div>
         <div className={`browser-screen ${project.category}`}>
-          {project.image && !failed ? (
+          {src && !failed ? (
             <img
-              src={project.image}
+              key={src}
+              src={src}
               alt={project.title}
               loading="lazy"
-              onError={() => setFailed(true)}
+              onError={handleError}
             />
           ) : (
             <span className="browser-letter">{project.title.charAt(0)}</span>
@@ -140,6 +165,14 @@ export default function Projects() {
               <small className="project-type">{p.type}</small>
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
+
+              {p.highlights?.length > 0 && (
+                <ul className="highlights">
+                  {p.highlights.map((h) => (
+                    <li key={h}>{h}</li>
+                  ))}
+                </ul>
+              )}
 
               <div className="tags">
                 {p.tags.map((t) => (

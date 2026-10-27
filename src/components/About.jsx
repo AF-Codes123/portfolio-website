@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
+const CV_FILE = "/Ayesha-Fatima-CV.pdf";
+const SHOW_CV = true; // set to false to hide the CV button
+
 const bio = [
   "I'm Ayesha Fatima, a Full Stack Developer and AI Engineer from Pakistan. I build clean web apps and smart AI systems that help businesses grow.",
   "My background is in data science: machine learning, deep learning and generative AI. I combine that with modern web development to ship products that are fast, useful and live on the web.",
@@ -102,6 +105,23 @@ export default function About() {
                 <span>{s.label}</span>
               </div>
             ))}
+          </div>
+        </Reveal>
+
+        <Reveal delay={300}>
+          <div className="about-cta">
+            {SHOW_CV && (
+              <a
+                className="btn btn-work"
+                href={CV_FILE}
+                download="Ayesha-Fatima-CV.pdf"
+              >
+                Download CV ↓
+              </a>
+            )}
+            <a className="btn btn-project" href="#contact">
+              Let's talk
+            </a>
           </div>
         </Reveal>
 

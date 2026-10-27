@@ -7,6 +7,9 @@ const words = [
   "Smart Automations.",
 ];
 
+// The avatar tries these files in order
+const AVATAR_SOURCES = ["/avatar-scene.webp", "/avatar-scene.jpg"];
+
 // If intro.mp3 is missing, this text is spoken by the browser voice
 const INTRO_TEXT =
   "Hi, I'm Aisha Fatima. I'm a full stack developer and AI engineer. " +
@@ -16,6 +19,7 @@ const INTRO_TEXT =
 export default function Hero() {
   const [playing, setPlaying] = useState(false);
   const [imgOk, setImgOk] = useState(true);
+  const [srcIndex, setSrcIndex] = useState(0);
   const [hasVideo, setHasVideo] = useState(true); // is intro.mp4 available?
 
   const audioRef = useRef(null);
@@ -24,6 +28,15 @@ export default function Hero() {
   const ctxRef = useRef(null);
   const rafRef = useRef(null);
   const tiltRef = useRef({ x: 0, y: 0, hover: false });
+
+  // If an image fails to load, try the next one; if none work, show a message
+  const handleImgError = () => {
+    if (srcIndex < AVATAR_SOURCES.length - 1) {
+      setSrcIndex(srcIndex + 1);
+    } else {
+      setImgOk(false);
+    }
+  };
 
   /* ---------- 3D tilt: idle sway + follows the mouse ---------- */
   useEffect(() => {
@@ -234,10 +247,11 @@ export default function Hero() {
         {imgOk ? (
           <div className="avatar-media">
             <img
+              key={AVATAR_SOURCES[srcIndex]}
               className="avatar-img scene"
-              src="/avatar-scene.jpg"
+              src={AVATAR_SOURCES[srcIndex]}
               alt="Ayesha Fatima"
-              onError={() => setImgOk(false)}
+              onError={handleImgError}
             />
             {hasVideo && (
               <video
@@ -253,7 +267,7 @@ export default function Hero() {
           </div>
         ) : (
           <div className="avatar-fallback">
-            Put avatar-scene.jpg in the public folder
+            Put avatar-scene.webp (or .jpg) in the public folder
           </div>
         )}
 

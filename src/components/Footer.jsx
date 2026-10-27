@@ -14,12 +14,15 @@ const services = [
   "AI Automation",
 ];
 
-// Apne asli links yahan daalo
+// Put your real links here. Leave a link as "" and it will be hidden.
+const LINKEDIN = ""; // e.g. "https://www.linkedin.com/in/your-username"
+const EMAIL = "ayeshafatimaitcs360@gmail.com";
+
 const socials = [
   { label: "GitHub", href: "https://github.com/AF-Codes123" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/ayesha-fatima-80870b38b" },
-  { label: "Email", href: "mailto:ayeshafatimaitcs360@gmail.com" },
-];
+  { label: "LinkedIn", href: LINKEDIN },
+  { label: "Email", href: EMAIL ? `mailto:${EMAIL}` : "" },
+].filter((s) => s.href);
 
 export default function Footer() {
   const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -29,12 +32,11 @@ export default function Footer() {
       <div className="footer-top">
         <div className="footer-brand">
           <div className="logo">
-            <span>AF</span> Ayesha
+            <span>AF</span> Ayesha Fatima
           </div>
           <p>
-            Full Stack Developer and AI Engineer. Main web apps, AI agents,
-            automations  banati hoon jo business ko grow
-            karein.
+            Full Stack Developer and AI Engineer. I build web apps, AI agents
+            and automations that help businesses grow.
           </p>
           <a href="#contact" className="btn btn-work footer-cta">
             Start a project
@@ -83,7 +85,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <small>
-          © {year} Ayesha. All rights reserved. Built with React and
+          © {year} Ayesha Fatima. All rights reserved. Built with React and
           Node.js.
         </small>
         <button className="to-top" onClick={toTop} aria-label="Back to top">

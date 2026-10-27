@@ -1138,3 +1138,33 @@ body {
 @media (max-width: 480px) {
   .nav .talk { display: none; }
 }
+/* ---------- PROJECT HIGHLIGHTS ---------- */
+.highlights {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 2px 0;
+}
+.highlights li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.highlights li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--gold);
+  font-weight: 800;
+}
+/* ---------- ABOUT BUTTONS ---------- */
+.about-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 26px;
+}

@@ -1,7 +1,8 @@
+
 import { useEffect, useRef, useState } from "react";
 
-const CV_FILE = "/Ayesha-Fatima-CV.pdf";
-const SHOW_CV = true; // set to false to hide the CV button
+const CV_FILE = "/Ayesha-Fatima_CV.pdf";
+const SHOW_CV = true;
 
 const bio = [
   "I'm Ayesha Fatima, a Full Stack Developer and AI Engineer from Pakistan. I build clean web apps and smart AI systems that help businesses grow.",
@@ -21,7 +22,13 @@ const skillGroups = [
   },
   {
     title: "AI & Data Science",
-    items: ["Python", "Machine Learning", "Deep Learning", "Generative AI", "AI Agents"],
+    items: [
+      "Python",
+      "Machine Learning",
+      "Deep Learning",
+      "Generative AI",
+      "AI Agents",
+    ],
   },
   {
     title: "Automation",
@@ -37,10 +44,12 @@ function Reveal({ children, delay = 0, className = "" }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
     if (!("IntersectionObserver" in window)) {
       setShown(true);
       return;
     }
+
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -50,6 +59,7 @@ function Reveal({ children, delay = 0, className = "" }) {
       },
       { threshold: 0.15 }
     );
+
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -72,6 +82,7 @@ export default function About() {
     <section className="about" id="about">
       <Reveal className="about-photo">
         <div className="about-glow" />
+
         {imgOk ? (
           <img
             src="/avatar.png"
@@ -114,11 +125,12 @@ export default function About() {
               <a
                 className="btn btn-work"
                 href={CV_FILE}
-                download="Ayesha-Fatima-CV.pdf"
+                download="Ayesha-Fatima_CV.pdf"
               >
                 Download CV ↓
               </a>
             )}
+
             <a className="btn btn-project" href="#contact">
               Let's talk
             </a>

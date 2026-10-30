@@ -16,7 +16,9 @@ app.set("trust proxy", 1);
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
+
 app.use(cors({ origin: allowedOrigins }));
+app.use(express.json({ limit: "20kb" })); // reads the request body (do not remove)
 
 /* ---------- Email notification (Resend) ---------- */
 async function notifyEmail({ name, email, message, source }) {
@@ -51,53 +53,57 @@ async function notifyEmail({ name, email, message, source }) {
   }
 }
 
-/* ---------- Messages save karna ---------- */
+/* ---------- Saving messages ---------- */
 const DATA_DIR = path.join(__dirname, "data");
 const FILE = path.join(DATA_DIR, "messages.json");
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, "[]");
 
 function saveMessage({ name, email, message, source }) {
-  const messages = JSON.parse(fs.readFileSync(FILE, "utf8"));
-  messages.push({
-    id: Date.now(),
-    name: String(name).slice(0, 100),
-    email: String(email).slice(0, 150),
-    message: String(message).slice(0, 2000),
-    source,
-    date: new Date().toISOString(),
-  });
-  fs.writeFileSync(FILE, JSON.stringify(messages, null, 2));
+  try {
+    const messages = JSON.parse(fs.readFileSync(FILE, "utf8"));
+    messages.push({
+      id: Date.now(),
+      name: String(name).slice(0, 100),
+      email: String(email).slice(0, 150),
+      message: String(message).slice(0, 2000),
+      source,
+      date: new Date().toISOString(),
+    });
+    fs.writeFileSync(FILE, JSON.stringify(messages, null, 2));
+  } catch (err) {
+    console.error("Could not save message:", err.message);
+  }
   notifyEmail({ name, email, message, source });
 }
 
-/* ---------- Agent ka data ---------- */
+/* ---------- Agent data ---------- */
 const SERVICES = [
-  { name: "Full Stack Development", detail: "Web apps frontend se backend aur database tak (React, Node.js)." },
-  { name: "AI Engineering", detail: "ML, deep learning, chatbots aur AI agents." },
-  { name: "AI Automation", detail: "Workflows aur repeat kaam automate karna." },
-  
+  { name: "Full Stack Development", detail: "Web apps from frontend to backend and database (React, Node.js)." },
+  { name: "AI Engineering", detail: "Machine learning, deep learning, chatbots and AI agents." },
+  { name: "AI Automation", detail: "Automating repetitive work and connecting tools into workflows." },
 ];
 
 const PROJECTS = [
   { name: "Nawab's Table", type: "Full Stack", about: "Restaurant website", live: "https://nawabs-table.vercel.app", github: "https://github.com/AF-Codes123/nawabs-table" },
-  { name: "Showroom Website", type: "Full Stack", about: "Velocity Motors showroom website", live: "https://velocity-motors-three.vercel.app", github: "https://github.com/AF-Codes123/velocity-motors" },
-  { name: "Job Scam Detector", type: "Machine Learning", about: "Fake job postings pehchanta hai, OCR feature ke saath", live: "https://job-scam-detector-with-ocr-feature-mpjfyd4uj5iukvlniotfts.streamlit.app/", github: "https://github.com/AF-Codes123/Job-Scam-Detector-With-OCR-Feature" },
-  { name: "AI Smart Study Chatbot", type: "AI + Web", about: "Students ke liye study assistant", live: "https://smart-ai-study-assistant.onrender.com", github: "https://github.com/AF-Codes123/smart-ai-study-assistant" },
+  { name: "Showroom Website", type: "Full Stack", about: "Showroom website for Velocity Motors", live: "https://velocity-motors-three.vercel.app", github: "https://github.com/AF-Codes123/velocity-motors" },
+  { name: "Job Scam Detector", type: "Machine Learning", about: "Detects fake job postings, with an OCR feature", live: "https://job-scam-detector-with-ocr-feature-mpjfyd4uj5iukvlniotfts.streamlit.app/", github: "https://github.com/AF-Codes123/Job-Scam-Detector-With-OCR-Feature" },
+  { name: "AI Smart Study Chatbot", type: "AI + Web", about: "A study assistant for students", live: "https://smart-ai-study-assistant.onrender.com", github: "https://github.com/AF-Codes123/smart-ai-study-assistant" },
 ];
 
 const SYSTEM = `You are the AI assistant on Ayesha Fatima's portfolio website.
-Ayesha is a Full Stack Developer, AI Engineer, AI Automation specialist that ghelpsthe businesses to grow.
-
+Ayesha is a Full Stack Developer, AI Engineer and AI Automation specialist.
 
 Rules:
 - Reply in the same language the visitor uses (English, Urdu or Roman Urdu).
 - Keep answers short, friendly and professional.
+- Use plain text only. Never use markdown symbols like ** or *. For lists, write each item on a new line starting with a dash (-).
 - Use the tools to get real services and projects. Never invent services, projects, prices or links.
+- Ayesha does not offer Shopify or store design services. If asked, say it is not one of her current services and mention what she does offer.
 - If a visitor wants to hire Ayesha or send a message, ask for their name, email and what they need. Only call send_message_to_ayesha once you have all three.
 - If you don't know something (like pricing), say Ayesha will answer personally and offer to pass on a message.`;
 
-/* ---------- Tools (agent ke haath) ---------- */
+/* ---------- Tools ---------- */
 const TOOLS = [
   {
     functionDeclarations: [
@@ -146,7 +152,7 @@ const ai = process.env.GEMINI_API_KEY
   : null;
 
 async function runAgent(history) {
-  // Gemini mein "assistant" ko "model" kehte hain
+  // Gemini calls the assistant role "model"
   const contents = history.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
@@ -161,12 +167,12 @@ async function runAgent(history) {
 
     const calls = response.functionCalls;
 
-    // Tool nahi chahiye: seedha jawab do
+    // No tool needed: answer directly
     if (!calls || calls.length === 0) {
-      return response.text || "Sorry, main jawab nahi de paya. Dobara try karein.";
+      return response.text || "Sorry, I could not answer that. Please try again.";
     }
 
-    // Agent ne tool maanga: chalao aur result wapas do
+    // The agent asked for a tool: run it and give the result back
     contents.push(response.candidates[0].content);
     contents.push({
       role: "user",
@@ -178,7 +184,7 @@ async function runAgent(history) {
       })),
     });
   }
-  return "Sorry, kuch masla aa gaya. Dobara try karein.";
+  return "Sorry, I could not answer that. Please try again.";
 }
 
 const chatLimiter = rateLimit({
@@ -189,7 +195,7 @@ const chatLimiter = rateLimit({
 
 app.post("/api/chat", chatLimiter, async (req, res) => {
   if (!ai)
-    return res.status(500).json({ ok: false, error: "AI agent abhi set up nahi hai (API key missing)." });
+    return res.status(500).json({ ok: false, error: "The AI assistant is not set up yet (API key missing)." });
 
   const raw = Array.isArray(req.body?.messages) ? req.body.messages : [];
   const history = raw
@@ -210,8 +216,8 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
     res.status(busy ? 429 : 500).json({
       ok: false,
       error: busy
-        ? "AI assistant ki free limit abhi poori ho gayi hai. Thori der baad try karein, ya Contact form use karein."
-        : "AI assistant abhi jawab nahi de paya. Thori der baad try karein.",
+        ? "The AI assistant has hit its free limit for now. Please try again in a little while, or use the contact form."
+        : "The AI assistant could not answer right now. Please try again shortly.",
     });
   }
 });
